@@ -6,23 +6,58 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://unpkg.com/tone"></script>
 		##imported from the actual tone.js website as the example
-        <script>
-
-			function playNote() {
-				// create a synth
-				const synth = new Tone.Synth().toDestination();
-				// play a note from that synth
-				synth.triggerAttackRelease("C4", "8n");
-			}
-		</script>
 
     </head>
 
 
     <body>
+        <h1>CREW PLATINA'S SONIFIER AYYYY</h1>
+        <h3>Look at the image and click the </h3>
+    
+        
+        <canvas id="theCanvas" width="400" height="200"></canvas>
+        <button id="play-btn">Play Note</button>
 
-  <button id="play-btn">Play Note</button>
-  <script src="/static/app.js"></script>
+        <div id="status">Status: working on it</div>
+       
+       <script>
+            const canvas = document.getElementById('imageCanvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const startBtn = document.getElementById('startBtn');
+            const statusText = document.getElementById('status');
+
+            //image stufs
+
+            const img = new Image();
+            img.crossOrigin = "Anonymous"; // cuz loading from a web URL
+            img.src = "co2_brightnes_jpeg.jpg";
+
+            //resize image to work inside canvas
+
+            img.onload = () => {
+                const scale = Math.min(500 / img.width, 1);
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                startBtn.disabled = false;
+                startBtn.innerText = "Start Scanning & Playing";
+                statusText.innerText = "Status: Image loaded! Click the button to start.";
+                };
+
+            img.onerror = () => {
+                statusText.innerText = "Error: Could not load 'my-image.jpg'. Make sure the filename matches and you are using a local server.";
+            }; //for errors
+
+            
+            //now we getting into toneee
+
+            const synth = new Tone.Synth().toDestination();
+            const noteToPlay = "E5";
+            const brightnessThreshold = 200; // 0 (black) to 255 (white)
+
+
+        </script>
 
     </body>
 </html>

@@ -5,7 +5,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://unpkg.com/tone"></script>
-		##imported from the actual tone.js website as the example
+
 
     </head>
 
@@ -14,10 +14,10 @@
         <h1>CREW PLATINA'S SONIFIER AYYYY</h1>
         <h3>Look at the image and click the </h3>
     
-        
-        <canvas id="theCanvas" width="400" height="200"></canvas>
-        <button id="play-btn">Play Note</button>
+        <img src="co2 _brightnes_jpeg.jpg" alt="co2_brightnes_jpeg" width="400" height="400">
 
+        <button id="play-btn">Play Note</button>
+        <canvas id="theCanvas" width="0" height="0"></canvas>
         <div id="status">Status: working on it</div>
        
        <script>
@@ -49,7 +49,7 @@
                 statusText.innerText = "Error: Could not load 'my-image.jpg'. Make sure the filename matches and you are using a local server.";
             }; //for errors
 
-            
+
             //now we getting into toneee
 
             const synth = new Tone.Synth().toDestination();

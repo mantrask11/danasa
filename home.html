@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 
 <html>
-<head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.5.67/Tone.min.js"></script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://unpkg.com/tone"></script>
+		##imported from the actual tone.js website as the example
+        <script>
 
-</head>
+			function playNote() {
+				// create a synth
+				const synth = new Tone.Synth().toDestination();
+				// play a note from that synth
+				synth.triggerAttackRelease("C4", "8n");
+			}
+		</script>
+
+    </head>
 
 
-<body>
+    <body>
+
   <button id="play-btn">Play Note</button>
   <script src="/static/app.js"></script>
-</body>
+
+    </body>
 </html>
 
 

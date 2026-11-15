@@ -420,32 +420,32 @@ Play</button>
       
       <div class="slideshow-container">
         <div class="mySlides1" data-title="CH-01 // ATMOSPHERE">
-          <img class="slide-image" src="particularmatter.png" alt="Pattern 1">
+          <img class="slide-image" id="slide1" src="particularmatter.png" alt="Pattern 1">
     
         </div>
 
         <div class="mySlides1" data-title="CH-02 // BIOSPHERE">
-          <img class="slide-image" src="windsurfacespeed.png" alt="Pattern 2">
+          <img class="slide-image" id="slide2" src="windsurfacespeed.png" alt="Pattern 2">
     
         </div>
 
         <div class="mySlides1" data-title="CH-03 // HYDROSPHERE">
-          <img class="slide-image" src="rainsnow.png" alt="Pattern 3">
+          <img class="slide-image" id="slide3" src="rainsnow.png" alt="Pattern 3">
          
         </div>
 
         <div class="mySlides1" data-title="CH-04 // ATMOSPHERE">
-          <img class="slide-image" src="aerosol.png" alt="Pattern 3">
+          <img class="slide-image" id="slide4" src="aerosol.png" alt="Pattern 3">
           
         </div>
 
         <div class="mySlides1" data-title="CH-05 // HYDROSPHERE">
-          <img class="slide-image" src="seasurfacetemperature.png" alt="Pattern 3">
+          <img class="slide-image" id="slide5" src="seasurfacetemperature.png" alt="Pattern 3">
           
         </div>
 
         <div class="mySlides1" data-title="CH-06 // HYDROSPHERE">
-          <img class="slide-image" src="O3.png" alt="Pattern 3">
+          <img class="slide-image" id="slide6" src="O3.png" alt="Pattern 3">
           
         </div>
 
@@ -486,11 +486,11 @@ Play</button>
 
     const logBox = document.getElementById('log');
 
-
+/*
     // PRESET IMAGE PATH
-    const IMAGE_PATH = 'particularmatter.png';
-
-
+    const IMAGE_PATH = originalImg.src; //'aerosol.png';
+console.log(IMAGE_PATH);
+*/
     // VARIABLES
     let loadedImg = null;
     let rawImageData = null;
@@ -509,52 +509,80 @@ Play</button>
 
 
     // 1. LOAD PRESET PNG
-    function loadPresetImage() {
+    // LOAD IMAGE DYNAMICALLY FROM SLIDESHOW
+   function loadPresetImage(imagePath) {
 
-      originalImg.onload = () => {
+    if (!imagePath) return;
 
-        loadedImg = originalImg;
+    // Stop previous playback
+    stopPlayback();
 
-        // Draw image onto invisible canvas
-        canvas.width = loadedImg.naturalWidth;
-        canvas.height = loadedImg.naturalHeight;
+    chunkNotes = [];
+    rawImageData = null;
+
+    logBox.textContent = "Loading selected channel...";
+
+    const img = new Image();
+
+    img.onload = () => {
+
+        loadedImg = img;
+
+        // Draw selected slideshow image onto hidden canvas
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
 
         ctx.clearRect(
-          0,
-          0,
-          canvas.width,
-          canvas.height
+            0,
+            0,
+            canvas.width,
+            canvas.height
         );
 
-        ctx.drawImage(
-          loadedImg,
-          0,
-          0
-        );
+        ctx.drawImage(img, 0, 0);
 
-        // Extract RGB pixel information
+        // Extract RGB values
         rawImageData = ctx.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
+            0,
+            0,
+            canvas.width,
+            canvas.height
         );
 
         // Generate musical chunks
         extractChunkData();
 
-      };
-
-      originalImg.onerror = () => {
         logBox.textContent =
-          'Error: Could not load preset image. Check IMAGE_PATH.';
-      };
+            `Channel loaded: ${canvas.width}x${canvas.height}px`;
+    };
 
-      originalImg.src = IMAGE_PATH;
-    }
+    img.onerror = () => {
+        logBox.textContent = "Error loading selected channel image.";
+    };
+
+    img.src = imagePath;
+}
+
+// GET CURRENT SLIDESHOW IMAGE
+   function loadCurrentSlideImage() {
 
 
-    // 2. EXTRACT RGB DATA AND CREATE MUSICAL CHUNKS
+    const slides = document.getElementsByClassName("mySlides1");
+
+    const currentSlide = slides[slideIndex[0] - 1];
+
+    if (!currentSlide) return;
+
+    const slideImage = currentSlide.querySelector(".slide-image");
+
+    if (!slideImage) return;
+
+    // Pass the actual image source to the sonifier
+    loadPresetImage(slideImage.src);
+}
+    
+
+// 2. EXTRACT RGB DATA AND CREATE MUSICAL CHUNKS
     function extractChunkData() {
 
       if (!rawImageData) return;
@@ -716,7 +744,7 @@ Play</button>
 
 
     // 7. LOAD IMAGE WHEN PAGE STARTS
-    loadPresetImage();
+   //  loadPresetImage();
 
   </script>
 
@@ -744,6 +772,8 @@ Play</button>
       }
       const currentSlide = x[slideIndex[no] - 1];
       currentSlide.style.display = "block";
+      loadCurrentSlideImage();
+
 
       // Update HUD counter and channel name
       document.getElementById("trackCounter").textContent = 

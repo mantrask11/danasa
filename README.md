@@ -1,4 +1,4 @@
-# da nasa project for NASA SPACE APPS 2026
+#The nasa project for NASA SPACE APPS 2026
 
 sonification (n.)
 son·​i·​fi·​ca·​tion ˌsänəfə̇ˈkāshən

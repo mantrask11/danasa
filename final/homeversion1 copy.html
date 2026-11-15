@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Sonifier</title>
+  <script src="https://cdn.jsdelivr.net/npm/tone"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      color: white;
+    }
+
+    #playBtn {
+      background: #1a73e8;
+    }
+
+    #stopBtn {
+      background: #d93025;
+    }
+
+    #log {
+      background: #f4f4f4;
+      padding: 10px;
+      border-left: 4px solid #1a73e8;
+      font-family: monospace;
+      margin-bottom: 15px;
+      max-width: 800px;
+    }
+
+    /* Hidden image */
+    #originalImg {
+      display: none;
+    }
+
+    /* Hidden processing canvas */
+    #imageCanvas {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Image Sonifier</h2>
+
+  <div class="controls">
+    <button id="playBtn">Play</button>
+    <button id="stopBtn">Stop</button>
+  </div>
+
+  <div class="controls">
+    <label>
+      Chunks (Musical Steps):
+      <strong id="chunkVal">64</strong>
+      <input
+        type="range"
+        id="chunkSlider"
+        min="8"
+        max="256"
+        value="64"
+      />
+    </label>
+
+    <label>
+      Speed (sec/chunk):
+      <strong id="speedVal">0.12</strong>
+      <input
+        type="range"
+        id="speedSlider"
+        min="0.03"
+        max="0.4"
+        step="0.01"
+        value="0.12"
+      />
+    </label>
+  </div>
+
+  <div id="log">Loading preset image...</div>
+
+  <!-- Hidden preset image -->
+  <img id="originalImg" alt="Preset image">
+
+  <!-- Invisible processing canvas -->
+  <canvas id="imageCanvas"></canvas>
+
+  <script>
+
+    // ELEMENTS
+    const originalImg = document.getElementById('originalImg');
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    const chunkSlider = document.getElementById('chunkSlider');
+    const speedSlider = document.getElementById('speedSlider');
+
+    const logBox = document.getElementById('log');
+
+
+    // PRESET IMAGE PATH
+    const IMAGE_PATH = 'particularmatter.png';
+
+
+    // VARIABLES
+    let loadedImg = null;
+    let rawImageData = null;
+    let chunkNotes = [];
+    let activeSynth = null;
+
+
+    // MUSICAL SCALE
+    const scale = [
+      'C2', 'D2', 'E2', 'G2', 'A2',
+      'C3', 'D3', 'E3', 'G3', 'A3',
+      'C4', 'D4', 'E4', 'G4', 'A4',
+      'C5', 'D5', 'E5', 'G5', 'A5',
+      'C6'
+    ];
+
+
+    // 1. LOAD PRESET PNG
+    function loadPresetImage() {
+
+      originalImg.onload = () => {
+
+        loadedImg = originalImg;
+
+        // Draw image onto invisible canvas
+        canvas.width = loadedImg.naturalWidth;
+        canvas.height = loadedImg.naturalHeight;
+
+        ctx.clearRect(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        ctx.drawImage(
+          loadedImg,
+          0,
+          0
+        );
+
+        // Extract RGB pixel information
+        rawImageData = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        // Generate musical chunks
+        extractChunkData();
+
+      };
+
+      originalImg.onerror = () => {
+        logBox.textContent =
+          'Error: Could not load preset image. Check IMAGE_PATH.';
+      };
+
+      originalImg.src = IMAGE_PATH;
+    }
+
+
+    // 2. EXTRACT RGB DATA AND CREATE MUSICAL CHUNKS
+    function extractChunkData() {
+
+      if (!rawImageData) return;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const data = rawImageData.data;
+
+      const numChunks = Math.min(
+        w,
+        parseInt(chunkSlider.value, 10)
+      );
+
+      const chunkWidth = w / numChunks;
+
+      chunkNotes = [];
+
+      for (let c = 0; c < numChunks; c++) {
+
+        const startX = Math.floor(c * chunkWidth);
+        const endX = Math.floor((c + 1) * chunkWidth);
+
+        let rTotal = 0;
+        let gTotal = 0;
+        let bTotal = 0;
+        let pixelCount = 0;
+
+        // Analyze each vertical image section
+        for (let x = startX; x < endX; x++) {
+
+          for (let y = 0; y < h; y++) {
+
+            const i = (y * w + x) * 4;
+
+            rTotal += data[i];
+            gTotal += data[i + 1];
+            bTotal += data[i + 2];
+
+            pixelCount++;
+
+          }
+        }
+
+        // Average RGB values
+        const rAvg = rTotal / pixelCount;
+        const gAvg = gTotal / pixelCount;
+        const bAvg = bTotal / pixelCount;
+
+        // Red determines musical note
+        const noteIdx = Math.min(
+          scale.length - 1,
+          Math.floor((rAvg / 256) * scale.length)
+        );
+
+        const note = scale[noteIdx];
+
+        // Green determines volume
+        const velocity = Math.max(
+          0.4,
+          gAvg / 255
+        );
+
+        // Blue determines duration
+        const duration = bAvg > 150 ? '8n' : '16n';
+
+        chunkNotes.push({
+          note,
+          velocity,
+          duration
+        });
+
+      }
+
+      const estTime = (
+        chunkNotes.length *
+        parseFloat(speedSlider.value)
+      ).toFixed(1);
+
+      logBox.textContent =
+        `Preset loaded: ${w}x${h}px | ` +
+        `${numChunks} musical chunks | ` +
+        `Estimated duration: ${estTime}s`;
+    }
+
+
+    // 3. UPDATE CHUNK SLIDER
+    chunkSlider.addEventListener('input', () => {
+
+      document.getElementById('chunkVal').textContent =
+        chunkSlider.value;
+
+      if (loadedImg) {
+        extractChunkData();
+      }
+
+    });
+
+
+    // 4. UPDATE SPEED SLIDER
+    speedSlider.addEventListener('input', () => {
+
+      document.getElementById('speedVal').textContent =
+        speedSlider.value;
+
+    });
+
+
+    // 5. PLAY IMAGE AS MUSIC
+    playBtn.addEventListener('click', async () => {
+
+      if (chunkNotes.length === 0) return;
+
+      stopPlayback();
+
+      await Tone.start();
+
+      activeSynth = new Tone.Synth().toDestination();
+
+      const startTime = Tone.now();
+      const step = parseFloat(speedSlider.value);
+
+      chunkNotes.forEach((item, idx) => {
+
+        activeSynth.triggerAttackRelease(
+          item.note,
+          item.duration,
+          startTime + idx * step,
+          item.velocity
+        );
+
+      });
+
+      logBox.textContent =
+        `Playing ${chunkNotes.length} musical chunks...`;
+
+    });
+
+
+    // 6. STOP PLAYBACK
+    function stopPlayback() {
+
+      if (activeSynth) {
+
+        activeSynth.dispose();
+        activeSynth = null;
+
+      }
+
+    }
+
+
+    stopBtn.addEventListener('click', () => {
+
+      stopPlayback();
+
+      logBox.textContent = 'Playback stopped.';
+
+    });
+
+
+    // 7. LOAD IMAGE WHEN PAGE STARTS
+    loadPresetImage();
+
+  </script>
+
+</body>
+</html>

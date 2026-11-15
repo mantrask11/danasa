@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crew Platina: Information Jukebox</title>
+  <style>
+    /* Earthy olive & cream retro-game jukebox theme */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #637545;
+      background-image: radial-gradient(#455230 1.5px, transparent 1.5px);
+      background-size: 20px 20px;
+      color: #EBEBD8;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    /* Full-width Header (Light Cream BG, Dark Olive Text) */
+    .page-header {
+      width: 100%;
+      background-color: #EBEBD8;
+      color: #455230;
+      padding: 20px 24px;
+      border-bottom: 5px solid #455230;
+      box-shadow: 0 5px 0 rgba(69, 82, 48, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .hud-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #455230;
+      color: #EBEBD8;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 4px;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #9BA685;
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: 2.3rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #455230;
+      text-shadow: 2px 2px 0px #9BA685;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      font-weight: 700;
+      color: #637545;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Main Content Wrapper */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 35px 20px;
+    }
+
+    .instructions {
+      background: #455230;
+      color: #EBEBD8;
+      border: 2px solid #9BA685;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin: 0 0 25px;
+      box-shadow: 0 4px 0 #313b21;
+    }
+
+    .key-cap {
+      display: inline-block;
+      background: #EBEBD8;
+      color: #455230;
+      font-weight: bold;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border-bottom: 2px solid #9BA685;
+      font-size: 0.8rem;
+    }
+
+    /* Jukebox Console Cabinet */
+    .slideshow-wrapper {
+      background: #455230;
+      padding: 20px;
+      border-radius: 14px;
+      border: 4px solid #EBEBD8;
+      box-shadow: 0 10px 0 #2e381f, 0 16px 25px rgba(0, 0, 0, 0.45);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    /* Top Console Screen Bar */
+    .console-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #354024;
+      border: 2px solid #9BA685;
+      padding: 8px 14px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+    }
+
+    .slideshow-label {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #EBEBD8;
+    }
+
+    .track-counter {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #455230;
+      background: #9BA685;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* CRT Screen Frame */
+    .slideshow-container {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 4px solid #2e381f;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+      background: #2e381f;
+    }
+
+    /* Subtle CRT scanline overlay */
+    .slideshow-container::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.18) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .mySlides1 {
+      display: none;
+      position: relative;
+    }
+
+    /* Static Display Image */
+    .slide-image {
+      width: 100%;
+      height: 340px;
+      object-fit: cover;
+      display: block;
+      filter: contrast(1.05) sepia(0.12);
+    }
+
+    /* Tactile Arcade Play Button */
+    .playButn {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      background: #EBEBD8;
+      color: #455230;
+      border: 3px solid #455230;
+      box-shadow: 0 5px 0 #455230, 0 8px 15px rgba(0, 0, 0, 0.5);
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+    }
+
+    .playButn:hover {
+      background: #9BA685;
+      color: #2e381f;
+    }
+
+    .playButn:active {
+      transform: translateX(-50%) translateY(4px);
+      box-shadow: 0 1px 0 #455230;
+    }
+
+    /* Tactile D-Pad / Arcade Arrows */
+    .prev, .next {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #455230;
+      background-color: #EBEBD8;
+      border: 3px solid #455230;
+      box-shadow: 0 4px 0 #455230;
+      font-weight: 900;
+      font-size: 18px;
+      border-radius: 8px;
+      user-select: none;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+    }
+
+    .prev { left: 14px; }
+    .next { right: 14px; }
+
+    .prev:hover, .next:hover {
+      background-color: #9BA685;
+    }
+
+    .prev:active, .next:active {
+      transform: translateY(calc(-50% + 3px));
+      box-shadow: 0 1px 0 #455230;
+    }
+
+    /* Bottom Console Readout & Equalizer */
+    .console-bottom-bar {
+      margin-top: 14px;
+      background: #354024;
+      border: 2px solid #9BA685;
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #9BA685;
+    }
+
+    .status-text {
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .equalizer {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 16px;
+    }
+
+    .eq-bar {
+      width: 4px;
+      height: 4px;
+      background-color: #9BA685;
+      border-radius: 1px;
+      transition: height 0.15s ease;
+    }
+
+    .equalizer.playing .eq-bar {
+      background-color: #EBEBD8;
+      animation: bounce 0.45s infinite alternate ease-in-out;
+    }
+
+    .equalizer.playing .eq-bar:nth-child(2) { animation-delay: 0.12s; }
+    .equalizer.playing .eq-bar:nth-child(3) { animation-delay: 0.25s; }
+    .equalizer.playing .eq-bar:nth-child(4) { animation-delay: 0.08s; }
+
+    @keyframes bounce {
+      0% { height: 4px; }
+      100% { height: 16px; }
+    }
+
+    /* Full-width Footer (Dark Olive BG, Cream Text) */
+    .page-footer {
+      width: 100%;
+      background-color: #455230;
+      color: #EBEBD8;
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      border-top: 5px solid #EBEBD8;
+      text-transform: uppercase;
+    }
+
+    .page-footer p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="hud-badge">
+      <span class="status-dot"></span>
+      <span>SYS.ONLINE // CREDITS: NASA; </span>
+    </div>
+    <h1>Crew Platina</h1>
+    <h2 class="subtitle">Earth Information Jukebox</h2>
+  </header>
+
+  <main class="main-content">
+    <p class="instructions">
+      Use <span class="key-cap">&larr;</span> <span class="key-cap">&rarr;</span> to select channel &bull; Press <span class="key-cap">PLAY</span> or <span class="key-cap">SPACEBAR</span> to sonify data
+    </p>
+
+  <canvas id="imageCanvas"></canvas>
+  
+    <div class="slideshow-wrapper">
+      <div class="console-top-bar">
+        <p class="slideshow-label" id="channelTitle">CH-01 // ATMOSPHERE</p>
+        <span class="track-counter" id="trackCounter">01 / 06</span>
+      </div>
+      
+      <div class="slideshow-container">
+        <div class="mySlides1" data-title="CH-01 // ATMOSPHERE">
+          <img class="slide-image" src="particularmatter.png" alt="Pattern 1">
+          <button id= "button1" class="playButn" type="button">
+            &#9654; Play Ch-01
+          </button>
+        </div>
+
+        <div class="mySlides1" data-title="CH-02 // BIOSPHERE">
+          <img class="slide-image" src="windsurfacespeed.png" alt="Pattern 2">
+          <button class="playButn" type="button" onclick="triggerPattern(2, [293.66, 369.99, 440.00, 587.33])">
+            &#9654; Play Ch-02
+          </button>
+        </div>
+
+        <div class="mySlides1" data-title="CH-03 // HYDROSPHERE">
+          <img class="slide-image" src="https://static.vecteezy.com/system/resources/thumbnails/083/933/835/small/beautiful-and-inspiring-picture-detailing-a-bright-hot-air-balloon-over-river-pure-cozy-perfect-for-creatives-moods-stock-image-free-photo.jpeg" alt="Pattern 3">
+          <button class="playButn" type="button" onclick="triggerPattern(3, [329.63, 415.30, 493.88, 659.25])">
+            &#9654; Play Ch-03
+          </button>
+        </div>
+
+        <div class="mySlides1" data-title="CH-04 // HYDROSPHERE">
+          <img class="slide-image" src="https://static.vecteezy.com/system/resources/thumbnails/083/933/835/small/beautiful-and-inspiring-picture-detailing-a-bright-hot-air-balloon-over-river-pure-cozy-perfect-for-creatives-moods-stock-image-free-photo.jpeg" alt="Pattern 3">
+          <button class="playButn" type="button" onclick="triggerPattern(3, [329.63, 415.30, 493.88, 659.25])">
+            &#9654; Play Ch-04
+          </button>
+        </div>
+
+        <div class="mySlides1" data-title="CH-05 // HYDROSPHERE">
+          <img class="slide-image" src="https://static.vecteezy.com/system/resources/thumbnails/083/933/835/small/beautiful-and-inspiring-picture-detailing-a-bright-hot-air-balloon-over-river-pure-cozy-perfect-for-creatives-moods-stock-image-free-photo.jpeg" alt="Pattern 3">
+          <button class="playButn" type="button" onclick="triggerPattern(3, [329.63, 415.30, 493.88, 659.25])">
+            &#9654; Play Ch-05
+          </button>
+        </div>
+
+        <div class="mySlides1" data-title="CH-06 // HYDROSPHERE">
+          <img class="slide-image" src="https://static.vecteezy.com/system/resources/thumbnails/083/933/835/small/beautiful-and-inspiring-picture-detailing-a-bright-hot-air-balloon-over-river-pure-cozy-perfect-for-creatives-moods-stock-image-free-photo.jpeg" alt="Pattern 3">
+          <button class="playButn" type="button" onclick="triggerPattern(3, [329.63, 415.30, 493.88, 659.25])">
+            &#9654; Play Ch-06
+          </button>
+        </div>
+
+        <a class="prev" onclick="plusSlides(-1, 0)" title="Previous Channel">&#10094;</a>
+        <a class="next" onclick="plusSlides(1, 0)" title="Next Channel">&#10095;</a>
+      </div>
+
+      <div class="console-bottom-bar">
+        <span class="status-text" id="statusReadout">READY &bull; AWAITING INPUT</span>
+        <div class="equalizer" id="equalizer">
+          <div class="eq-bar"></div>
+          <div class="eq-bar"></div>
+          <div class="eq-bar"></div>
+          <div class="eq-bar"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <p>&copy; 2026 Crew Platina // Earth Information Jukebox &bull; Insert Disc to Continue</p>
+  </footer>
+
+  <script>
+    let slideIndex = [1];
+    let slideId = ["mySlides1"];
+    let audioCtx = null;
+    let eqTimeout = null;
+
+    showSlides(1, 0);
+
+    function plusSlides(n, no) {
+      playBlip(440, 0.05);
+      showSlides(slideIndex[no] += n, no);
+    }
+
+    function showSlides(n, no) {
+      let x = document.getElementsByClassName(slideId[no]);
+      if (!x.length) return;
+      if (n > x.length) { slideIndex[no] = 1; }    
+      if (n < 1) { slideIndex[no] = x.length; }
+      for (let i = 0; i < x.length; i++) {
+        x[i].style.display = "none";  
+      }
+      const currentSlide = x[slideIndex[no] - 1];
+      currentSlide.style.display = "block";
+
+      // Update HUD counter and channel name
+      document.getElementById("trackCounter").textContent = 
+        String(slideIndex[no]).padStart(2, '0') + " / " + String(x.length).padStart(2, '0');
+      document.getElementById("channelTitle").textContent = currentSlide.dataset.title;
+      document.getElementById("statusReadout").textContent = "CHANNEL LOADED // READY";
+    }
+
+    // Simple retro synthesizer chime using Web Audio API
+    function playBlip(freq, duration) {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+
+    function triggerPattern(num, notes) {
+      const readout = document.getElementById("statusReadout");
+      const eq = document.getElementById("equalizer");
+      
+      readout.textContent = `PLAYING CH-0${num}...`;
+      readout.style.color = "#EBEBD8";
+      eq.classList.add("playing");
+
+      notes.forEach((freq, idx) => {
+        setTimeout(() => playBlip(freq, 0.18), idx * 110);
+      });
+
+      clearTimeout(eqTimeout);
+      eqTimeout = setTimeout(() => {
+        eq.classList.remove("playing");
+        readout.textContent = `CH-0${num} COMPLETE`;
+        readout.style.color = "#9BA685";
+      }, 900);
+    }
+
+    // Keyboard controls for arcade feel
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") plusSlides(-1, 0);
+      if (e.key === "ArrowRight") plusSlides(1, 0);
+      if (e.key === " ") {
+        e.preventDefault();
+        const activeBtn = document.querySelector(`.mySlides1:nth-child(${slideIndex[0]}) .playButn`);
+        if (activeBtn) activeBtn.click();
+      }
+    });
+  </script>
+  
+  
+</body>
+</html>

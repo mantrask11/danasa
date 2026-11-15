@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>High-Res Image Sonifier (Hidden Canvas)</title>
+  <title>CH1</title>
   <script src="https://cdn.jsdelivr.net/npm/tone"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; }
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-  <h2>the image Sonifier</h2>
+  <h2>ONE.</h2>
 
   <div class="controls">
     <input type="file" id="imageLoader" accept="image/*" />
@@ -38,16 +38,7 @@
     <button id="stopBtn">Stop</button>
   </div>
 
-  <div class="controls">
-    <label>
-      Chunks (Musical Steps): <strong id="chunkVal">64</strong>
-      <input type="range" id="chunkSlider" min="8" max="256" value="64" />
-    </label>
-    <label>
-      Speed (sec/chunk): <strong id="speedVal">0.12</strong>
-      <input type="range" id="speedSlider" min="0.03" max="0.4" step="0.01" value="0.12" />
-    </label>
-  </div>
+  <
 
   <div id="log">Upload a PNG or JPG to view it at full size and hear its RGB colors.</div>
 
@@ -64,8 +55,8 @@
     const imageLoader = document.getElementById('imageLoader');
     const playBtn = document.getElementById('playBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const chunkSlider = document.getElementById('chunkSlider');
-    const speedSlider = document.getElementById('speedSlider');
+    const chunkval = 64
+    const speedval = 0.2
     const logBox = document.getElementById('log');
 
     let loadedImg = null;
@@ -80,16 +71,8 @@
       'C5', 'D5', 'E5', 'G5', 'A5', 'C6'
     ];
 
-    chunkSlider.addEventListener('input', () => {
-      document.getElementById('chunkVal').textContent = chunkSlider.value;
-      if (loadedImg) extractChunkData();
-    });
-
-    speedSlider.addEventListener('input', () => {
-      document.getElementById('speedVal').textContent = speedSlider.value;
-    });
-
-    // 1. Load image into the visible <img> and invisible <canvas>
+    
+     // 1. Load image into the visible <img> and invisible <canvas>
     imageLoader.addEventListener('change', (e) => {
       const file = e.target.files.item(0);
       if (!file) return;
@@ -127,7 +110,7 @@
       const w = canvas.width;
       const h = canvas.height;
       const data = rawImageData.data;
-      const numChunks = Math.min(w, parseInt(chunkSlider.value, 10));
+      const numChunks = Math.min(w, parseInt(64, 10));
       const chunkWidth = w / numChunks;
 
       chunkNotes = [];
@@ -155,13 +138,13 @@
 
         const noteIdx = Math.min(scale.length - 1, Math.floor((rAvg / 256) * scale.length));
         const note = scale[noteIdx];
-        const velocity = Math.max(0.4, gAvg / 255);
+        const velocity = Math.max(0.2, gAvg / 255);
         const duration = bAvg > 150 ? '8n' : '16n';
 
         chunkNotes.push({ note, velocity, duration });
       }
 
-      const estTime = (chunkNotes.length * parseFloat(speedSlider.value)).toFixed(1);
+      const estTime = (chunkNotes.length * parseFloat(0.2)).toFixed(1);
       logBox.textContent = `Loaded ${w}x${h}px image (${numChunks} musical chunks, ~${estTime}s). Click Play!`;
     }
 
@@ -174,7 +157,7 @@
       activeSynth = new Tone.Synth().toDestination();
 
       const startTime = Tone.now();
-      const step = parseFloat(speedSlider.value);
+      const step = parseFloat(0.2);
 
       chunkNotes.forEach((item, idx) => {
         activeSynth.triggerAttackRelease(item.note, item.duration, startTime + idx * step, item.velocity);
